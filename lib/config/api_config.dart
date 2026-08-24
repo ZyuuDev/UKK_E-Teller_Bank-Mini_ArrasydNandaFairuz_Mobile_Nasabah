@@ -5,5 +5,5 @@ class ApiConfig {
   static const String logout = '$baseUrl/auth/logout';
 
   static const String balance = '$baseUrl/nasabah/balance';
-  static const String mutations = '$baseUrl/nasabah/mutations'
+  static const String mutations = '$baseUrl/nasabah/mutations';
 }

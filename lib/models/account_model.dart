@@ -1,26 +1,38 @@
-class AccountModel {
+int rupiahValue(dynamic value) {
+  if (value is int) return value;
+  final text = value.toString();
+  if (!RegExp(r'^\d+(?:\.0+)?$').hasMatch(text)) {
+    throw const FormatException('Nominal dari server tidak valid.');
+  }
+  return int.parse(text.split('.').first);
+}
+
+class SaverAccount {
   final String accountNumber;
-  final String fullName;
-  final String className;
   final int balance;
+  final int reservedBalance;
+  final int availableBalance;
   final String qrCodeToken;
 
-  AccountModel({
-    required this.accountNumber,
-    required this.fullName,
-    required this.className,
-    required this.balance,
-    required this.qrCodeToken,
-  });
+  SaverAccount.fromJson(Map<String, dynamic> json)
+    : accountNumber = json['account_number'] as String,
+      balance = rupiahValue(json['balance']),
+      reservedBalance = rupiahValue(json['reserved_balance']),
+      availableBalance = rupiahValue(json['available_balance']),
+      qrCodeToken = json['qr_code_token'] as String;
+}
 
-  // respon json dari endpoint /api/nasabah/balance menjadi dart
-  factory AccountModel.fromJson(Map<String, dynamic> json) {
-    return AccountModel(
-      accountNumber: json['account_number'] ?? '',
-      fullName: json['full_name'] ?? '',
-      className: json['class_name'] ?? '',
-      balance: int.tryParse(json['balance'].toString()) ?? 0,
-      qrCodeToken: json['qr_code_token'] ?? '',
-    );
-  }
+class AccountModel {
+  final String studentNumber;
+  final String fullName;
+  final int? graduationYear;
+  final SaverAccount? saver;
+
+  AccountModel.fromJson(Map<String, dynamic> json)
+    : studentNumber = json['member']['student_number'] as String,
+      fullName = json['member']['full_name'] as String,
+      graduationYear = json['member']['graduation_year'] as int?,
+      saver = json['saver'] == null
+          ? null
+          : SaverAccount.fromJson(Map<String, dynamic>.from(json['saver']));
 }

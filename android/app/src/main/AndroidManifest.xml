@@ -1,8 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="mobile"
+        android:label="Bank Mini SKANSABA"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -43,3 +45,5 @@
         </intent>
     </queries>
 </manifest>
+
+<uses-permission android:name="android.permission.INTERNET" />

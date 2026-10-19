@@ -23,8 +23,9 @@ class ApiService {
     bool authenticated = true,
   }) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}$path');
-    if (kReleaseMode && uri.scheme != 'https')
+    if (kReleaseMode && uri.scheme != 'https') {
       throw ApiException('Alamat server rilis harus menggunakan HTTPS.');
+    }
     final token = authenticated ? await StorageService.getToken() : null;
     final headers = {
       'Accept': 'application/json',
@@ -43,8 +44,9 @@ class ApiService {
               .timeout(const Duration(seconds: 20));
       if (response.statusCode == 204) return {};
       final payload = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 401 && authenticated)
+      if (response.statusCode == 401 && authenticated) {
         await StorageService.clearToken();
+      }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final errors = payload['errors'] as Map<String, dynamic>?;
         final message = errors == null
@@ -76,8 +78,9 @@ class ApiService {
     );
     final data = Map<String, dynamic>.from(result['data']);
     final user = Map<String, dynamic>.from(data['user']);
-    if (user['role'] != 'student')
+    if (user['role'] != 'student') {
       throw ApiException('Aplikasi ini khusus siswa.');
+    }
     await StorageService.saveToken(data['token'] as String);
     return user;
   }

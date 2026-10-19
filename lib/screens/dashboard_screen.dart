@@ -37,7 +37,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> refresh() async {
     final next = load();
-    setState(() => data = next);
+    setState(() {
+      data = next;
+    });
     try {
       await next;
     } catch (_) {
@@ -54,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget savings(AccountModel profile) {
     final saver = profile.saver;
-    if (saver == null)
+    if (saver == null) {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(24),
@@ -73,6 +75,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -212,9 +215,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     body: FutureBuilder<(AccountModel, MutationPage)>(
       future: data,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done)
+        if (snapshot.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError)
+        }
+        if (snapshot.hasError) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -235,6 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           );
+        }
         final (profile, rows) = snapshot.data!;
         return RefreshIndicator(
           onRefresh: refresh,

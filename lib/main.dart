@@ -61,8 +61,11 @@ class _SessionGateState extends State<SessionGate> {
     }
   }
 
-  void signedIn(Map<String, dynamic> user) =>
-      setState(() => session = Future.value(user));
+  void signedIn(Map<String, dynamic> user) {
+    setState(() {
+      session = Future.value(user);
+    });
+  }
 
   Future<void> logout() async {
     String? warning;
@@ -73,20 +76,24 @@ class _SessionGateState extends State<SessionGate> {
           'Token di HP dihapus. Server belum dapat dikonfirmasi karena koneksi gagal.';
     }
     if (!mounted) return;
-    setState(() => session = Future.value(null));
-    if (warning != null)
+    setState(() {
+      session = Future.value(null);
+    });
+    if (warning != null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(warning)));
+    }
   }
 
   @override
   Widget build(BuildContext context) => FutureBuilder<Map<String, dynamic>?>(
     future: session,
     builder: (context, snapshot) {
-      if (snapshot.connectionState != ConnectionState.done)
+      if (snapshot.connectionState != ConnectionState.done) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      if (snapshot.hasError)
+      }
+      if (snapshot.hasError) {
         return Scaffold(
           body: Center(
             child: Column(
@@ -94,16 +101,22 @@ class _SessionGateState extends State<SessionGate> {
               children: [
                 Text(snapshot.error.toString()),
                 FilledButton(
-                  onPressed: () => setState(() => session = restore()),
+                  onPressed: () {
+                    final nextSession = restore();
+                    setState(() {
+                      session = nextSession;
+                    });
+                  },
                   child: const Text('Periksa sesi lagi'),
                 ),
               ],
             ),
           ),
         );
+      }
       final user = snapshot.data;
       if (user == null) return LoginScreen(onLogin: signedIn);
-      if (user['role'] != 'student')
+      if (user['role'] != 'student') {
         return Scaffold(
           body: Center(
             child: FilledButton(
@@ -112,8 +125,10 @@ class _SessionGateState extends State<SessionGate> {
             ),
           ),
         );
-      if (user['must_change_password'] == true)
+      }
+      if (user['must_change_password'] == true) {
         return PasswordScreen(onChanged: signedIn);
+      }
       return DashboardScreen(onLogout: logout);
     },
   );

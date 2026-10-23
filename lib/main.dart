@@ -3,6 +3,8 @@ import 'services/api_service.dart';
 import 'services/storage_service.dart';
 import 'screens/auth_screens.dart';
 import 'screens/dashboard_screen.dart';
+import 'theme/bank_theme.dart';
+import 'widgets/bank_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,23 +18,8 @@ class BankApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: 'Bank Mini SMKN 1 Bantul',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xff146c4f),
-        brightness: Brightness.light,
-      ),
-      scaffoldBackgroundColor: const Color(0xfff4f7f4),
-      inputDecorationTheme: const InputDecorationTheme(
-        border: OutlineInputBorder(),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: const Size(44, 48)),
-      ),
-    ),
+    theme: BankTheme.dark,
+    themeMode: ThemeMode.dark,
     home: const SessionGate(),
   );
 }
@@ -45,6 +32,7 @@ class SessionGate extends StatefulWidget {
 
 class _SessionGateState extends State<SessionGate> {
   late Future<Map<String, dynamic>?> session;
+
   @override
   void initState() {
     super.initState();
@@ -62,9 +50,23 @@ class _SessionGateState extends State<SessionGate> {
   }
 
   void signedIn(Map<String, dynamic> user) {
+    if (!mounted) return;
+    final next = Future<Map<String, dynamic>?>.value(user);
     setState(() {
-      session = Future.value(user);
+      session = next;
     });
+  }
+
+  void expired() {
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    final next = Future<Map<String, dynamic>?>.value(null);
+    setState(() {
+      session = next;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sesi berakhir. Silakan masuk kembali.')),
+    );
   }
 
   Future<void> logout() async {
@@ -73,11 +75,13 @@ class _SessionGateState extends State<SessionGate> {
       await ApiService.logout();
     } catch (_) {
       warning =
-          'Token di HP dihapus. Server belum dapat dikonfirmasi karena koneksi gagal.';
+          'Token di HP dihapus. Logout server belum dapat dikonfirmasi karena koneksi gagal.';
     }
     if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    final next = Future<Map<String, dynamic>?>.value(null);
     setState(() {
-      session = Future.value(null);
+      session = next;
     });
     if (warning != null) {
       ScaffoldMessenger.of(
@@ -95,21 +99,38 @@ class _SessionGateState extends State<SessionGate> {
       }
       if (snapshot.hasError) {
         return Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(snapshot.error.toString()),
-                FilledButton(
-                  onPressed: () {
-                    final nextSession = restore();
-                    setState(() {
-                      session = nextSession;
-                    });
-                  },
-                  child: const Text('Periksa sesi lagi'),
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      BankNotice(
+                        message: snapshot.error.toString(),
+                        error: true,
+                      ),
+                      BankButton(
+                        label: 'Periksa sesi lagi',
+                        onPressed: () {
+                          final next = restore();
+                          setState(() {
+                            session = next;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      BankButton(
+                        label: 'Keluar dari akun',
+                        secondary: true,
+                        onPressed: logout,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -119,17 +140,24 @@ class _SessionGateState extends State<SessionGate> {
       if (user['role'] != 'student') {
         return Scaffold(
           body: Center(
-            child: FilledButton(
-              onPressed: logout,
-              child: const Text('Akun bukan siswa. Keluar'),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: BankButton(
+                label: 'Akun bukan siswa. Keluar',
+                onPressed: logout,
+              ),
             ),
           ),
         );
       }
       if (user['must_change_password'] == true) {
-        return PasswordScreen(onChanged: signedIn);
+        return PasswordScreen(onChanged: signedIn, onSessionExpired: expired);
       }
-      return DashboardScreen(onLogout: logout);
+      return DashboardScreen(
+        onLogout: logout,
+        onSessionExpired: expired,
+        user: user,
+      );
     },
   );
 }

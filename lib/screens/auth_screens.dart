@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'pin_recovery_screen.dart';
 import '../theme/bank_theme.dart';
 import '../widgets/bank_widgets.dart';
 
@@ -90,6 +91,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                 child: const Text('Lupa password?'),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: busy
+                    ? null
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PinRecoveryScreen(),
+                        ),
+                      ),
+                child: const Text('Lupa PIN?'),
               ),
             ),
             const SizedBox(height: 16),

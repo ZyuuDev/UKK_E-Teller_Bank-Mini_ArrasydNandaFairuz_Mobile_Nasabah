@@ -304,7 +304,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       const SizedBox(height: 12),
       const Text(
-        'PIN penarikan ditetapkan saat aktivasi oleh teller. Reset PIN belum tersedia di aplikasi ini.',
+        'Lupa PIN tersedia pada halaman login. Keluar dari akun, pilih Lupa PIN, lalu gunakan email terverifikasi dan password login. Jika password juga lupa, pulihkan password terlebih dahulu.',
         style: TextStyle(color: BankColors.muted, fontSize: 12),
       ),
       const SizedBox(height: 24),

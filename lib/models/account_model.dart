@@ -27,6 +27,7 @@ class AccountModel {
   final String fullName;
   final int? graduationYear;
   final SaverAccount? saver;
+  final String serviceStatus;
 
   AccountModel.fromJson(Map<String, dynamic> json)
     : studentNumber = json['member']['student_number'] as String,
@@ -34,5 +35,6 @@ class AccountModel {
       graduationYear = json['member']['graduation_year'] as int?,
       saver = json['saver'] == null
           ? null
-          : SaverAccount.fromJson(Map<String, dynamic>.from(json['saver']));
+          : SaverAccount.fromJson(Map<String, dynamic>.from(json['saver'])),
+      serviceStatus = (json['service_status'] as String?)?.toLowerCase() ?? 'buka';
 }

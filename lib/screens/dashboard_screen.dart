@@ -344,6 +344,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
         toolbarHeight: 80,
         title: const BankBrand(compact: true),
         actions: [
+          if (current != null)
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: current.serviceStatus == 'buka'
+                      ? const Color(0xFFDCFCE7)
+                      : current.serviceStatus == 'istirahat'
+                          ? const Color(0xFFFEF3C7)
+                          : const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: current.serviceStatus == 'buka'
+                            ? const Color(0xFF16A34A)
+                            : current.serviceStatus == 'istirahat'
+                                ? const Color(0xFFD97706)
+                                : const Color(0xFFDC2626),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      current.serviceStatus == 'buka'
+                          ? 'Loket Buka'
+                          : current.serviceStatus == 'istirahat'
+                              ? 'Istirahat'
+                              : 'Loket Tutup',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: current.serviceStatus == 'buka'
+                            ? const Color(0xFF15803D)
+                            : current.serviceStatus == 'istirahat'
+                                ? const Color(0xFFB45309)
+                                : const Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           IconButton(
             tooltip: 'Muat ulang data',
             onPressed: loading || pageBusy || loggingOut ? null : refresh,

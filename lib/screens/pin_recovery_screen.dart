@@ -76,7 +76,6 @@ class _PinRecoveryScreenState extends State<PinRecoveryScreen> {
           failed = true;
           message = failure.toString();
         });
-        // Jangan mempertahankan password/PIN setelah permintaan gagal.
         if (resetting) {
           loginPassword.clear();
           pin.clear();

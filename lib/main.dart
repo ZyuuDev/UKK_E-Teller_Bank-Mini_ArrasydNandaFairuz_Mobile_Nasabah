@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 import 'services/storage_service.dart';
@@ -30,19 +31,88 @@ class SessionGate extends StatefulWidget {
   State<SessionGate> createState() => _SessionGateState();
 }
 
-class _SessionGateState extends State<SessionGate> {
+class _SessionGateState extends State<SessionGate>
+    with WidgetsBindingObserver {
   late Future<Map<String, dynamic>?> session;
+  Timer? _idleTimer;
+  DateTime? _pausedAt;
+  DateTime _lastPing = DateTime.now();
+  Map<String, dynamic>? _currentUser;
+
+  static const int defaultIdleSeconds = 300;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     session = restore();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopIdleWatcher();
+    super.dispose();
+  }
+
+  int get _idleTimeoutSeconds {
+    final configured = _currentUser?['idle_timeout_seconds'];
+    if (configured is int && configured > 0) return configured;
+    return defaultIdleSeconds;
+  }
+
+  void _startIdleWatcher() {
+    _idleTimer?.cancel();
+    _idleTimer = Timer(Duration(seconds: _idleTimeoutSeconds), _onIdleTimeout);
+  }
+
+  void _stopIdleWatcher() {
+    _idleTimer?.cancel();
+    _idleTimer = null;
+    _pausedAt = null;
+  }
+
+  void _recordActivity() {
+    if (_currentUser == null) return;
+    _startIdleWatcher();
+    final now = DateTime.now();
+    if (now.difference(_lastPing).inSeconds >= 45) {
+      _lastPing = now;
+      ApiService.me().catchError((_) => <String, dynamic>{});
+    }
+  }
+
+  void _onIdleTimeout() {
+    if (_currentUser == null || !mounted) return;
+    expired('Sesi Anda telah berakhir karena tidak ada aktivitas.');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_currentUser == null) return;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _pausedAt = DateTime.now();
+      _idleTimer?.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      final paused = _pausedAt;
+      _pausedAt = null;
+      if (paused != null &&
+          DateTime.now().difference(paused).inSeconds >= _idleTimeoutSeconds) {
+        _onIdleTimeout();
+      } else {
+        _startIdleWatcher();
+      }
+    }
   }
 
   Future<Map<String, dynamic>?> restore() async {
     if (await StorageService.getToken() == null) return null;
     try {
-      return await ApiService.me();
+      final user = await ApiService.me();
+      _currentUser = user;
+      _startIdleWatcher();
+      return user;
     } on ApiException catch (failure) {
       if (failure.status == 401) return null;
       rethrow;
@@ -51,13 +121,17 @@ class _SessionGateState extends State<SessionGate> {
 
   void signedIn(Map<String, dynamic> user) {
     if (!mounted) return;
+    _currentUser = user;
+    _startIdleWatcher();
     final next = Future<Map<String, dynamic>?>.value(user);
     setState(() {
       session = next;
     });
   }
 
-  void expired() {
+  void expired([String? message]) {
+    _stopIdleWatcher();
+    _currentUser = null;
     if (!mounted) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
     final next = Future<Map<String, dynamic>?>.value(null);
@@ -65,11 +139,15 @@ class _SessionGateState extends State<SessionGate> {
       session = next;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sesi berakhir. Silakan masuk kembali.')),
+      SnackBar(
+        content: Text(message ?? 'Sesi berakhir. Silakan masuk kembali.'),
+      ),
     );
   }
 
   Future<void> logout() async {
+    _stopIdleWatcher();
+    _currentUser = null;
     String? warning;
     try {
       await ApiService.logout();
@@ -136,7 +214,15 @@ class _SessionGateState extends State<SessionGate> {
         );
       }
       final user = snapshot.data;
-      if (user == null) return LoginScreen(onLogin: signedIn);
+      if (user == null) {
+        _currentUser = null;
+        _stopIdleWatcher();
+        return LoginScreen(onLogin: signedIn);
+      }
+      _currentUser = user;
+      if (_idleTimer == null) {
+        _startIdleWatcher();
+      }
       if (user['role'] != 'student') {
         return Scaffold(
           body: Center(
@@ -150,13 +236,24 @@ class _SessionGateState extends State<SessionGate> {
           ),
         );
       }
+      Widget content;
       if (user['must_change_password'] == true) {
-        return PasswordScreen(onChanged: signedIn, onSessionExpired: expired);
+        content = PasswordScreen(
+          onChanged: signedIn,
+          onSessionExpired: () => expired(),
+        );
+      } else {
+        content = DashboardScreen(
+          onLogout: logout,
+          onSessionExpired: () => expired(),
+          user: user,
+        );
       }
-      return DashboardScreen(
-        onLogout: logout,
-        onSessionExpired: expired,
-        user: user,
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _recordActivity(),
+        onPointerMove: (_) => _recordActivity(),
+        child: content,
       );
     },
   );

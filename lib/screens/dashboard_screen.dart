@@ -6,6 +6,7 @@ import '../theme/bank_theme.dart';
 import '../widgets/bank_widgets.dart';
 import '../widgets/account_widgets.dart';
 import 'auth_screens.dart';
+import 'appointment_screen.dart';
 import 'email_panel.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -183,7 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 BankAmount(value: saver.availableBalance, size: 24),
                 const SizedBox(height: 16),
                 Text(
-                  'Saldo mengendap ${money(saver.reservedBalance)}',
+                  'Saldo mengendap wajib ${money(saver.reservedBalance)} · Batas bebas harian Rp1.000.000',
                   style: const TextStyle(color: BankColors.muted, fontSize: 12),
                 ),
               ],
@@ -197,6 +198,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onCopy: saver == null
               ? null
               : () => copyAccountNumber(context, saver.accountNumber),
+          onAppointment: saver == null
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AppointmentScreen(profile: account),
+                    ),
+                  ),
         ),
         const SizedBox(height: 28),
         heading(

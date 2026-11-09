@@ -172,11 +172,13 @@ class AccountActions extends StatelessWidget {
   final VoidCallback? onQr;
   final VoidCallback onMutations;
   final VoidCallback? onCopy;
+  final VoidCallback? onAppointment;
   const AccountActions({
     super.key,
     this.onQr,
     required this.onMutations,
     this.onCopy,
+    this.onAppointment,
   });
   @override
   Widget build(BuildContext context) => Row(
@@ -199,8 +201,15 @@ class AccountActions extends StatelessWidget {
       ),
       Expanded(
         child: _CircleAction(
+          icon: Icons.event_note_rounded,
+          label: 'Janji Tarik',
+          onTap: onAppointment,
+        ),
+      ),
+      Expanded(
+        child: _CircleAction(
           icon: Icons.copy_rounded,
-          label: 'Salin rekening',
+          label: 'Salin rek',
           onTap: onCopy,
         ),
       ),

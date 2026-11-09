@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/account_model.dart';
+import '../models/appointment_model.dart';
 import '../models/mutation_model.dart';
 import 'storage_service.dart';
 
@@ -98,6 +99,39 @@ class ApiService {
           (await request('GET', '/student/mutations?page=$page'))['data'],
         ),
       );
+
+  static Future<WithdrawalLimitsModel> withdrawalLimits() async =>
+      WithdrawalLimitsModel.fromJson(
+        Map<String, dynamic>.from(
+          (await request('GET', '/student/withdrawal-limits'))['data'],
+        ),
+      );
+
+  static Future<AppointmentPage> appointments({int page = 1}) async =>
+      AppointmentPage.fromJson(
+        Map<String, dynamic>.from(
+          await request('GET', '/student/appointments?page=$page'),
+        ),
+      );
+
+  static Future<AppointmentModel> createAppointment({
+    required int amount,
+    required String scheduledDate,
+    String? notes,
+  }) async {
+    final result = await request(
+      'POST',
+      '/student/appointments',
+      body: {
+        'amount': amount,
+        'scheduled_date': scheduledDate,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      },
+    );
+    return AppointmentModel.fromJson(
+      Map<String, dynamic>.from(result['data'] as Map),
+    );
+  }
 
   static Future<Map<String, dynamic>> changePassword(
     String current,

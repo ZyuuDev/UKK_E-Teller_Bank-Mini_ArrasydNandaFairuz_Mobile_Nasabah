@@ -49,6 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return false;
   }
 
+  // 1. Memuat data profil rekening siswa & 3 transaksi mutasi terbaru dari API
   Future<void> refresh() async {
     if (refreshing || pageBusy || loggingOut) return;
     refreshing = true;
@@ -77,6 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // 2. Navigasi pagination halaman mutasi transaksi
   Future<void> changePage(int value) async {
     if (pageBusy ||
         loading ||
@@ -160,6 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ),
   );
 
+  // 3. Tab Utama Tabungan: Kartu saldo, saldo tersedia dapat ditarik (sisa saldo - Rp 10.000), & tombol aksi cepat
   Widget savings(AccountModel account) {
     final saver = account.saver;
     return Column(
@@ -276,6 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // 4. Tab Akun: Data siswa, email verifikasi pemulihan, ganti password login, & logout
   Widget account(AccountModel account) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [

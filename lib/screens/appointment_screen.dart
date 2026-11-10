@@ -7,6 +7,7 @@ import '../theme/bank_theme.dart';
 import '../widgets/account_widgets.dart';
 import '../widgets/bank_widgets.dart';
 
+// Layar Pengajuan & Riwayat Perjanjian Penarikan Dana Siswa (> Rp 1.000.000, H-1)
 class AppointmentScreen extends StatefulWidget {
   final AccountModel profile;
   const AppointmentScreen({super.key, required this.profile});
@@ -45,6 +46,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     super.dispose();
   }
 
+  // Inisialisasi data: Memuat batas limit penarikan & riwayat pengajuan nasabah
   Future<void> _loadInitialData() async {
     await Future.wait([
       _loadLimits(),
@@ -79,6 +81,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     }
   }
 
+  // 1. Pemilihan tanggal penarikan wajib minimal H-1 (mulai besok)
   Future<void> _pickDate() async {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     final picked = await showDatePicker(
@@ -93,6 +96,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     }
   }
 
+  // 2. Validasi & Pengiriman formulir perjanjian penarikan ke Admin
   Future<void> _submitAppointment() async {
     final amountText = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
     final amount = int.tryParse(amountText) ?? 0;
@@ -172,6 +176,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     }
   }
 
+  // 3. Widget badge status persetujuan (Menunggu, Disetujui, Dicairkan, Ditolak)
   Widget _buildStatusChip(String status, String? reason) {
     Color bg;
     Color fg;
@@ -213,6 +218,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     );
   }
 
+  // 4. Tab Formulir: Input nominal penarikan, tanggal H-1, & keperluan
   Widget _buildFormTab() {
     final maxAllowed = _limits?.maxWithdrawable ?? (widget.profile.saver?.availableBalance ?? 0);
 
@@ -353,6 +359,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
     );
   }
 
+  // 5. Tab Riwayat: Menampilkan daftar riwayat tiket pengajuan penarikan siswa
   Widget _buildListTab() {
     if (_loadingList) {
       return const Center(child: CircularProgressIndicator());

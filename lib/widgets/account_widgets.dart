@@ -59,6 +59,7 @@ class BankAmount extends StatelessWidget {
   }
 }
 
+// 1. Kartu Saldo Tabungan Sekolah (menampilkan saldo total, nomor rekening, & nama pemilik)
 class BalanceCard extends StatelessWidget {
   final AccountModel profile;
   const BalanceCard({super.key, required this.profile});
@@ -168,6 +169,7 @@ class BalanceCard extends StatelessWidget {
   }
 }
 
+// 2. Tombol Aksi Cepat Siswa (QR Rekening, Mutasi, Janji Tarik H-1, Salin Nomor Rekening)
 class AccountActions extends StatelessWidget {
   final VoidCallback? onQr;
   final VoidCallback onMutations;
@@ -256,6 +258,7 @@ class _CircleAction extends StatelessWidget {
   );
 }
 
+// 3. Baris Transaksi Mutasi (Ikon arah dana masuk/keluar, nominal, waktu, & status)
 class MutationTile extends StatelessWidget {
   final MutationModel row;
   const MutationTile({super.key, required this.row});
@@ -343,6 +346,7 @@ class MutationTile extends StatelessWidget {
   }
 }
 
+// 4. Modal Bottom Sheet Detail Transaksi (Nomor referensi, jenis, nominal, waktu WIB, catatan)
 Future<void> showMutationDetails(BuildContext context, MutationModel row) =>
     showModalBottomSheet<void>(
       context: context,

@@ -1,10 +1,10 @@
 int rupiahValue(dynamic value) {
-  if (value is int) return value;
-  final text = value.toString();
-  if (!RegExp(r'^\d+(?:\.0+)?$').hasMatch(text)) {
-    throw const FormatException('Nominal dari server tidak valid.');
-  }
-  return int.parse(text.split('.').first);
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  final text = value.toString().trim();
+  if (text.isEmpty) return 0;
+  final clean = text.split('.').first;
+  return int.tryParse(clean) ?? (double.tryParse(text)?.toInt() ?? 0);
 }
 
 class SaverAccount {
@@ -15,11 +15,11 @@ class SaverAccount {
   final String qrCodeToken;
 
   SaverAccount.fromJson(Map<String, dynamic> json)
-    : accountNumber = json['account_number'] as String,
+    : accountNumber = json['account_number']?.toString() ?? '',
       balance = rupiahValue(json['balance']),
       reservedBalance = rupiahValue(json['reserved_balance']),
       availableBalance = rupiahValue(json['available_balance']),
-      qrCodeToken = json['qr_code_token'] as String;
+      qrCodeToken = json['qr_code_token']?.toString() ?? '';
 }
 
 class AccountModel {
@@ -30,11 +30,11 @@ class AccountModel {
   final String serviceStatus;
 
   AccountModel.fromJson(Map<String, dynamic> json)
-    : studentNumber = json['member']['student_number'] as String,
-      fullName = json['member']['full_name'] as String,
-      graduationYear = json['member']['graduation_year'] as int?,
+    : studentNumber = json['member']?['student_number']?.toString() ?? '',
+      fullName = json['member']?['full_name']?.toString() ?? '',
+      graduationYear = (json['member']?['graduation_year'] as num?)?.toInt(),
       saver = json['saver'] == null
           ? null
-          : SaverAccount.fromJson(Map<String, dynamic>.from(json['saver'])),
+          : SaverAccount.fromJson(Map<String, dynamic>.from(json['saver'] as Map)),
       serviceStatus = (json['service_status'] as String?)?.toLowerCase() ?? 'buka';
 }

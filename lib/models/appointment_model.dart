@@ -59,10 +59,10 @@ class AppointmentModel {
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
     return AppointmentModel(
-      id: json['id'] as int,
-      appointmentCode: json['appointment_code'] as String,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      appointmentCode: json['appointment_code']?.toString() ?? '',
       amount: rupiahValue(json['amount']),
-      scheduledDate: json['scheduled_date'] as String,
+      scheduledDate: json['scheduled_date']?.toString() ?? '',
       notes: json['notes'] as String?,
       status: (json['status'] as String?) ?? 'pending',
       creatorRole: (json['creator_role'] as String?) ?? 'student',
@@ -87,14 +87,33 @@ class AppointmentPage {
   });
 
   factory AppointmentPage.fromJson(Map<String, dynamic> json) {
-    final list = (json['data'] as List? ?? [])
-        .map((e) => AppointmentModel.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    final rawData = json['data'];
+    List list;
+    int currentPage = 1;
+    int lastPage = 1;
+    int total = 0;
+
+    if (rawData is Map) {
+      list = (rawData['data'] as List?) ?? [];
+      currentPage = (rawData['current_page'] as num?)?.toInt() ?? 1;
+      lastPage = (rawData['last_page'] as num?)?.toInt() ?? 1;
+      total = (rawData['total'] as num?)?.toInt() ?? list.length;
+    } else if (rawData is List) {
+      list = rawData;
+      currentPage = (json['current_page'] as num?)?.toInt() ?? 1;
+      lastPage = (json['last_page'] as num?)?.toInt() ?? 1;
+      total = (json['total'] as num?)?.toInt() ?? list.length;
+    } else {
+      list = [];
+    }
+
     return AppointmentPage(
-      items: list,
-      currentPage: json['current_page'] as int? ?? 1,
-      lastPage: json['last_page'] as int? ?? 1,
-      total: json['total'] as int? ?? list.length,
+      items: list
+          .map((e) => AppointmentModel.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      currentPage: currentPage,
+      lastPage: lastPage,
+      total: total,
     );
   }
 }

@@ -264,7 +264,7 @@ class MutationTile extends StatelessWidget {
   const MutationTile({super.key, required this.row});
   @override
   Widget build(BuildContext context) {
-    final deposit = row.transactionType == 'Deposit';
+    final deposit = row.transactionType.toLowerCase() == 'deposit';
     final color = deposit ? BankColors.success : BankColors.danger;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -369,7 +369,7 @@ Future<void> showMutationDetails(BuildContext context, MutationModel row) =>
               BankDetailRow(label: 'Referensi', value: 'TRX-${row.id}'),
               BankDetailRow(
                 label: 'Jenis',
-                value: row.transactionType == 'Deposit'
+                value: row.transactionType.toLowerCase() == 'deposit'
                     ? 'Setoran'
                     : 'Penarikan',
               ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'services/api_service.dart';
 import 'services/storage_service.dart';
 import 'screens/auth_screens.dart';
@@ -9,6 +10,7 @@ import 'widgets/bank_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await StorageService.removeLegacyToken();
   runApp(const BankApp());
 }

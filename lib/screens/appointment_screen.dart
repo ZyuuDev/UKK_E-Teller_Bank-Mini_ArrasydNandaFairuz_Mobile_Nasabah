@@ -7,6 +7,32 @@ import '../theme/bank_theme.dart';
 import '../widgets/account_widgets.dart';
 import '../widgets/bank_widgets.dart';
 
+// Helper pemformat tanggal Indonesia yang 100% aman tanpa dependensi eksternal
+String formatIndonesianDate(DateTime date) {
+  const dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  try {
+    final dayName = dayNames[(date.weekday - 1).clamp(0, 6)];
+    final dayNum = date.day.toString().padLeft(2, '0');
+    final monthName = monthNames[(date.month - 1).clamp(0, 11)];
+    final year = date.year;
+    return '$dayName, $dayNum $monthName $year';
+  } catch (_) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+String displayScheduledDate(String dateStr) {
+  final parsed = DateTime.tryParse(dateStr);
+  if (parsed != null) {
+    return formatIndonesianDate(parsed);
+  }
+  return dateStr;
+}
+
 // Layar Pengajuan & Riwayat Perjanjian Penarikan Dana Siswa (> Rp 1.000.000, H-1)
 class AppointmentScreen extends StatefulWidget {
   final AccountModel profile;
@@ -83,12 +109,19 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
 
   // 1. Pemilihan tanggal penarikan wajib minimal H-1 (mulai besok)
   Future<void> _pickDate() async {
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final maxDate = DateTime(now.year, now.month, now.day + 60);
+
+    DateTime initial = _selectedDate ?? tomorrow;
+    if (initial.isBefore(tomorrow)) initial = tomorrow;
+    if (initial.isAfter(maxDate)) initial = maxDate;
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? tomorrow,
+      initialDate: initial,
       firstDate: tomorrow,
-      lastDate: DateTime.now().add(const Duration(days: 60)),
+      lastDate: maxDate,
       helpText: 'PILIH TANGGAL PENARIKAN (H-1)',
     );
     if (picked != null) {
@@ -323,7 +356,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
                         Text(
                           _selectedDate == null
                               ? 'Pilih tanggal (minimal H-1 besok)'
-                              : DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_selectedDate!),
+                              : formatIndonesianDate(_selectedDate!),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: _selectedDate == null ? FontWeight.normal : FontWeight.bold,
@@ -457,7 +490,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with SingleTicker
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Tgl Pengambilan:', style: TextStyle(color: BankColors.muted)),
-                    Text(item.scheduledDate, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(displayScheduledDate(item.scheduledDate), style: const TextStyle(fontWeight: FontWeight.w600)),
                   ],
                 ),
                 if (item.notes != null && item.notes!.isNotEmpty) ...[

@@ -225,7 +225,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget mutations() {
-    final data = rows!;
+    final data = rows;
+    if (data == null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

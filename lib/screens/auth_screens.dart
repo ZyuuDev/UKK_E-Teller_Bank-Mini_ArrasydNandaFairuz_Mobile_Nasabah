@@ -289,7 +289,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
       );
       if (!mounted) return;
       setState(() {
-        message = result['message'] as String;
+        message = result['message']?.toString() ?? 'Permintaan berhasil diproses.';
         step = resetting ? _RecoveryStep.done : _RecoveryStep.reset;
       });
       if (resetting) {

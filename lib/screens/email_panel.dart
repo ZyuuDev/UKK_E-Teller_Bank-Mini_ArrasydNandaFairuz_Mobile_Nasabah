@@ -68,7 +68,7 @@ class _EmailPanelState extends State<EmailPanel> {
       password.clear();
       if (verify) code.clear();
       setState(() {
-        message = result['message'] as String;
+        message = result['message']?.toString() ?? 'Permintaan berhasil diproses.';
         if (!verify && requestedEmail != registeredEmail) verified = false;
         if (!verify) registeredEmail = requestedEmail;
       });

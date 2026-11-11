@@ -8,10 +8,10 @@ class MutationModel {
   final String notes;
 
   MutationModel.fromJson(Map<String, dynamic> json)
-    : id = json['id'] as int,
-      transactionType = json['transaction_type'] as String,
+    : id = (json['id'] as num?)?.toInt() ?? 0,
+      transactionType = json['transaction_type']?.toString() ?? 'Deposit',
       amount = rupiahValue(json['amount']),
-      occurredAt = DateTime.parse(json['created_at'] as String),
+      occurredAt = DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
       notes = json['notes'] as String? ?? '';
 }
 
@@ -21,9 +21,9 @@ class MutationPage {
   final int lastPage;
 
   MutationPage.fromJson(Map<String, dynamic> json)
-    : items = (json['data'] as List)
-          .map((row) => MutationModel.fromJson(Map<String, dynamic>.from(row)))
+    : items = (json['data'] as List? ?? [])
+          .map((row) => MutationModel.fromJson(Map<String, dynamic>.from(row as Map)))
           .toList(),
-      currentPage = json['current_page'] as int,
-      lastPage = json['last_page'] as int;
+      currentPage = (json['current_page'] as num?)?.toInt() ?? 1,
+      lastPage = (json['last_page'] as num?)?.toInt() ?? 1;
 }
